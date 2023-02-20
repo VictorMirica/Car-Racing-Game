@@ -1,0 +1,99 @@
+Mirica Victor 334CB
+
+Tema este formata din trei fisiere sursa: Tema2.cpp, Tema2.h si tema2_camera.h
+De asemenea, pentru shadere am si fisierele VertexShader.glsl si FragmentShader.glsl
+
+	tema2_camera.h
+In acest fisier header implementez camera si functiile ei.
+Contine Translatii si Rotatiile necesare, o functie care intoarce view matrix-ul,
+una care intoarce pozitia masinii (target) si una care intoarce urmatoarea pozitie
+la care s-ar afla targetul, fara sa il miste. 
+Ultima functie este folosita pentru verificare daca masina este in bounds.
+
+	FragmentShader.glsl
+Utilizat doar pentru a da ca output culoarea shaderului
+
+	VertexShader.glsl
+Preia si trimite culoarea catre fragmentShader. De asemenea calculeaza gl_Position dupa care ii 
+modifica y-ul pentru curbura terenului
+
+	Tema2.cpp
+Init()
+	Initializez meshurile pentru a fi rendered. Setez Pozitia initiala a camerei.
+	Pentru drum, am puncte plasate manual de la A la R, intre care apelez functia
+	addAllPoints(), care adauga 100 de puncte intre fiecare doua puncte.
+	Pentru generarea indicilor strazii si a liniei din mijlocul strazii apelez functia
+	generateRoadIndices()
+	Pentru obstacole, voi genera 5 masini de culori diferite, pe diferite portiuni ale pistei.
+	In final initializez shaderul si variabilele.
+
+generateRoadIndices()
+	Generez indicii pentru drum. Punctele de interior si exterior sunt generate folosind functia
+	din enunt. Dupa care, pentru fiecare punct exterior, creez doua tringhuri, unul format din el si
+	doua puncte de interior si altul format din el, alt punct de exterior si unul de interior.
+
+	Pentru linia alba din mijlocul strazii, voi lasa unele puncte fara sa le unesc, odata la 10 puncte,
+	las un spatiu de 5 puncte.
+
+addAllPoints()
+	O functie care primeste doua puncte si intoarce 100 de puncte aditionale intre A si B, practic
+	imparte segmentul AB in 100 de segmente.
+
+GenerateCarPath()
+	Functie care genereaza path-ul unui obstacol, similar cu un vector pentru punctele de interior
+	sau exterior, la o distanta data fata de mijloc.
+
+triangleArea()
+	Calculeaza aria tringhiului ABC
+
+insideTirangle()
+	Verifica daca punctul P se afla in triunghiul ABC
+
+checkRoadCollision()
+	Verifica daca pozitia masinii se afla in cel putin unul din triunghiurile care definesc
+	geometria pistei
+
+checkCarsCollision()
+	Presupune o verificare de coliziune sfera-sfera
+
+RenderObjects()
+	Da render la toate obiectele din scena: Strada, linia strazii, planul verde.
+	Pentru copaci, am ales sa dau render la mai multe tipuri, cu coroana rotunda si cu
+	coroana patrata. Copacii vor fi plasati pe punctele care incadreaza strada, odata la
+	cateva puncte.
+	Pentru render-ul obstacolelor, impart punctele intre care se misca obstacolul in mai
+	multe puncte, pentru o miscare mai fluida. La fiecare apel al functiei, masinile se vor misca
+	in urmatorul punct.
+	pentru calcularea carStep, cu care este incrementata pozitia masinii la fiecare apel, 
+	ma folosesc de o variabila de viteza pe care o impart la indexul masinii, pentru a avea o 
+	variatie intre viteza diferitelor masini.
+	Pentru calcularea unghiului de rotatie al masinii, calculez unghiul dintre segmentul AB pe care
+	se afla, si axa OZ.
+	Render-ul final este masina jucatorului
+
+RenderScene()
+	Apeleaza renderObjects(), pe viewPortul principal, in view perspective.
+
+RenderMiniMap()
+	Apeleaza renderObjects(), pe viewPortul minimap, in view ortho. Pentru a muta camera
+	inainte de render, o translatez pana in masina jucatorului, schimb vectorii de forward si up
+	astfel incat aceasta sa priveasca in jos, si o translatez in sus pentru a cuprinde si masina
+	jucatorului. Dupa render, translatez camera inapoi in pozitia initiala.
+
+FrameStart(), Update() si FrameEnd()
+	Seteaza cele doua viewporturi si apeleaza RenderScene() respectiv RenderMiniMap().
+
+RenderSimpleMesh()
+	Functie care da bind in VertexShader la color vector,
+	car position vector (folosit pentru curbura terenului),
+	model matrix, view matrix si projection matrix.
+
+OnInputUpdate()
+	Tastele W si S misca masina jucatorului in fata si in spate, inainte de miscare verific
+	daca urmatoarea pozitie a masinii este una valida (in pista, fara a se lovi de obstacole).
+	Tastele A si D rotesc camera si masina in stanga si in dreapta, aceasta rotatie se aplica
+	doar daca masina nu este intr-o coliziune.
+
+Ca bonus, am adaugat pistei o linie discontinua, alba, pe mijlocul ei. Liniile sunt echivalente
+iar intre fiecare linie sunt pauze
+Pentru copaci, am adaugat mai multe forme, care variaza in functie de numarul copacului.
